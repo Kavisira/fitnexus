@@ -20,6 +20,9 @@ const files = [
   "enums/otp-purpose.prisma",
   "enums/otp-status.prisma",
 "enums/password-reset-session-status.prisma",
+"enums/otp-target-type.prisma",
+"enums/otp-purpose.prisma",
+"enums/otp-status.prisma",
 
   "models/organization.prisma",
   "models/branch.prisma",
@@ -34,6 +37,7 @@ const files = [
   "models/verification-otp.prisma",
   "models/registration-session.prisma",
   "models/password-reset-session.prisma",
+"models/verification-otp.prisma",
 ];
 
 const content = files
