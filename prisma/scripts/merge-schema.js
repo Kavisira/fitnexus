@@ -19,10 +19,7 @@ const files = [
   "enums/otp-target-type.prisma",
   "enums/otp-purpose.prisma",
   "enums/otp-status.prisma",
-"enums/password-reset-session-status.prisma",
-"enums/otp-target-type.prisma",
-"enums/otp-purpose.prisma",
-"enums/otp-status.prisma",
+  "enums/password-reset-session-status.prisma",
 
   "models/organization.prisma",
   "models/branch.prisma",
