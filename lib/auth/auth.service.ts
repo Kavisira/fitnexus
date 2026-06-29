@@ -16,20 +16,26 @@ type LoginInput = {
 };
 
 export async function loginUser(input: LoginInput) {
-  const user = await prisma.user.findFirst({
-    where: {
-      OR: [{ email: input.loginId }, { phone: input.loginId }],
-    },
-    include: {
-      role: true,
-      organization: true,
-      branches: {
-        include: {
-          branch: true,
-        },
+ const loginId = input.loginId.trim().toLowerCase();
+const phone = input.loginId.replace(/\D/g, "");
+
+const user = await prisma.user.findFirst({
+  where: {
+    OR: [
+      { email: loginId },
+      { phone },
+    ],
+  },
+  include: {
+    role: true,
+    organization: true,
+    branches: {
+      include: {
+        branch: true,
       },
     },
-  });
+  },
+});
 
   if (!user) {
 throw new AppError("Invalid login credentials", 401);  
