@@ -1,0 +1,6 @@
+enum RegistrationSessionStatus {
+  PENDING
+  VERIFIED
+  COMPLETED
+  EXPIRED
+}

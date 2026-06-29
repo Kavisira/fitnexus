@@ -1,0 +1,6 @@
+enum ThemeType {
+  ORANGE
+  LIGHT
+  DARK
+  BLUE
+}

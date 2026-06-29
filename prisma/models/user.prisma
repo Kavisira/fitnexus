@@ -1,0 +1,30 @@
+model User {
+  id             String     @id @default(cuid())
+  userCode       String     @unique
+  organizationId String?
+  roleId         String
+
+  ownerName      String
+  email          String     @unique
+  phone          String     @unique
+  passwordHash   String
+
+  profileImage   String?
+  status         UserStatus @default(PENDING_VERIFICATION)
+  lastLoginAt    DateTime?
+
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  createdBy      String?
+  updatedBy      String?
+
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  role           Role          @relation(fields: [roleId], references: [id])
+  branches       UserBranch[]
+  sessions       UserSession[]
+  passwordResetSessions PasswordResetSession[]
+  @@index([organizationId])
+  @@index([roleId])
+  @@index([email])
+  @@index([phone])
+}

@@ -1,0 +1,25 @@
+model RegistrationSession {
+  id              String                    @id @default(cuid())
+  sessionToken    String                    @unique
+
+  email           String
+  phone           String
+
+  emailOtpId String?
+  phoneOtpId String?
+  
+  emailVerified   Boolean                   @default(false)
+  phoneVerified   Boolean                   @default(false)
+
+  status          RegistrationSessionStatus @default(PENDING)
+  expiresAt       DateTime
+  completedAt     DateTime?
+  
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+
+  @@index([email])
+  @@index([phone])
+  @@index([sessionToken])
+  @@index([status])
+}

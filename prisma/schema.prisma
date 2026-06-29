@@ -1,0 +1,395 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum RecordStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum RoleType {
+  SUPER_ADMIN
+  ORG_ADMIN
+  BRANCH_MANAGER
+  TRAINER
+  RECEPTIONIST
+  ACCOUNTANT
+  HOUSEKEEPING
+  SALES_EXECUTIVE
+}
+
+enum ThemeType {
+  ORANGE
+  LIGHT
+  DARK
+  BLUE
+}
+
+enum LanguageType {
+  ENGLISH
+  TAMIL
+}
+
+enum TimeFormat {
+  TWELVE_HOUR
+  TWENTY_FOUR_HOUR
+}
+
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  PENDING_VERIFICATION
+  LOCKED
+}
+
+enum SequenceType {
+  ORGANIZATION
+  BRANCH
+  USER
+  MEMBER
+  LEAD
+  MEMBERSHIP
+  PAYMENT
+  INVOICE
+}
+
+enum SessionStatus {
+  ACTIVE
+  EXPIRED
+  LOGGED_OUT
+  REVOKED
+}
+
+enum RegistrationSessionStatus {
+  PENDING
+  VERIFIED
+  COMPLETED
+  EXPIRED
+}
+
+enum OtpTargetType {
+  EMAIL
+  PHONE
+}
+
+enum OtpPurpose {
+  REGISTRATION
+  FORGOT_PASSWORD
+}
+
+enum OtpStatus {
+  PENDING
+  VERIFIED
+  EXPIRED
+}
+
+enum PasswordResetSessionStatus {
+  PENDING
+  VERIFIED
+  COMPLETED
+  EXPIRED
+}
+
+model Organization {
+  id               String       @id @default(cuid())
+  organizationCode String       @unique
+  organizationName String
+  displayName      String
+  email            String       @unique
+  phone            String       @unique
+  website          String?
+  status           RecordStatus @default(ACTIVE)
+
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+  createdBy        String?
+  updatedBy        String?
+  branches         Branch[]
+  settings OrganizationSettings? 
+  roles Role[]
+  users User[]
+}
+
+model Branch {
+  id             String       @id @default(cuid())
+  branchCode     String       @unique
+  organizationId String
+
+  branchName     String
+  displayName    String?
+  email          String?
+  phone          String?
+  logo           String?
+
+  addressLine1   String?
+  addressLine2   String?
+  city           String?
+  state          String?
+  country        String?
+  postalCode     String?
+  latitude       Decimal?
+  longitude      Decimal?
+
+  isHeadOffice   Boolean      @default(false)
+  status         RecordStatus @default(ACTIVE)
+
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  createdBy      String?
+  updatedBy      String?
+
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  users UserBranch[]
+  @@unique([organizationId, branchName])
+  @@index([organizationId])
+  @@index([branchCode])
+}
+
+model OrganizationSettings {
+  id              String       @id @default(cuid())
+  organizationId  String       @unique
+
+  logo            String?
+  defaultTheme    ThemeType    @default(ORANGE)
+  defaultLanguage LanguageType @default(ENGLISH)
+  currency        String       @default("INR")
+  timezone        String       @default("Asia/Kolkata")
+  dateFormat      String       @default("DD/MM/YYYY")
+  timeFormat      TimeFormat   @default(TWELVE_HOUR)
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  createdBy       String?
+  updatedBy       String?
+
+  organization    Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+}
+
+model Role {
+  id             String       @id @default(cuid())
+  organizationId String?
+
+  roleType       RoleType
+  roleName       String
+  description    String?
+  isDefault      Boolean      @default(false)
+  status         RecordStatus @default(ACTIVE)
+
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  createdBy      String?
+  updatedBy      String?
+
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  permissions RolePermission[]
+  users User[]
+  @@unique([organizationId, roleType, roleName])
+  @@index([organizationId])
+  @@index([roleType])
+}
+
+model Permission {
+  id             String       @id @default(cuid())
+
+  permissionCode String       @unique
+  module         String
+  permissionName String
+  description    String?
+  status         RecordStatus @default(ACTIVE)
+
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  createdBy      String?
+  updatedBy      String?
+
+  roles          RolePermission[]
+
+  @@index([module])
+  @@index([permissionCode])
+}
+
+model RolePermission {
+  id           String     @id @default(cuid())
+  roleId       String
+  permissionId String
+
+  role         Role       @relation(fields: [roleId], references: [id])
+  permission   Permission @relation(fields: [permissionId], references: [id])
+
+  createdAt    DateTime   @default(now())
+  createdBy    String?
+
+  @@unique([roleId, permissionId])
+  @@index([roleId])
+  @@index([permissionId])
+}
+
+model User {
+  id             String     @id @default(cuid())
+  userCode       String     @unique
+  organizationId String?
+  roleId         String
+
+  ownerName      String
+  email          String     @unique
+  phone          String     @unique
+  passwordHash   String
+
+  profileImage   String?
+  status         UserStatus @default(PENDING_VERIFICATION)
+  lastLoginAt    DateTime?
+
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  createdBy      String?
+  updatedBy      String?
+
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  role           Role          @relation(fields: [roleId], references: [id])
+  branches       UserBranch[]
+  sessions       UserSession[]
+  passwordResetSessions PasswordResetSession[]
+  @@index([organizationId])
+  @@index([roleId])
+  @@index([email])
+  @@index([phone])
+}
+
+model UserBranch {
+  id              String   @id @default(cuid())
+  userId          String
+  branchId        String
+  isPrimaryBranch Boolean  @default(false)
+
+  createdAt       DateTime @default(now())
+  createdBy       String?
+
+  user            User     @relation(fields: [userId], references: [id])
+  branch          Branch   @relation(fields: [branchId], references: [id])
+
+  @@unique([userId, branchId])
+  @@index([userId])
+  @@index([branchId])
+}
+
+model UserSession {
+  id             String        @id @default(cuid())
+  userId         String
+
+  sessionToken   String        @unique
+  refreshToken   String?       @unique
+
+  deviceName     String?
+  deviceType     String?
+  browser        String?
+  operatingSystem String?
+  ipAddress      String?
+  userAgent      String?
+
+  status         SessionStatus @default(ACTIVE)
+
+  expiresAt      DateTime
+  lastActivityAt DateTime      @default(now())
+
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  user           User          @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([sessionToken])
+  @@index([status])
+  @@index([expiresAt])
+}
+
+model CodeSequence {
+  id           String       @id @default(cuid())
+  sequenceType SequenceType @unique
+  prefix       String
+  lastNumber   Int          @default(0)
+  padding      Int          @default(6)
+  status       RecordStatus @default(ACTIVE)
+
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  createdBy    String?
+  updatedBy    String?
+
+  @@index([sequenceType])
+}
+
+model VerificationOtp {
+  id          String        @id @default(cuid())
+  targetType  OtpTargetType
+  targetValue String
+  otpCode     String
+  purpose     OtpPurpose
+  status      OtpStatus     @default(PENDING)
+
+  expiresAt   DateTime
+  verifiedAt  DateTime?
+
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([targetType, targetValue])
+  @@index([purpose])
+  @@index([status])
+  @@index([expiresAt])
+}
+
+model RegistrationSession {
+  id              String                    @id @default(cuid())
+  sessionToken    String                    @unique
+
+  email           String
+  phone           String
+
+  emailOtpId String?
+  phoneOtpId String?
+  
+  emailVerified   Boolean                   @default(false)
+  phoneVerified   Boolean                   @default(false)
+
+  status          RegistrationSessionStatus @default(PENDING)
+  expiresAt       DateTime
+  completedAt     DateTime?
+  
+  createdAt       DateTime                  @default(now())
+  updatedAt       DateTime                  @updatedAt
+
+  @@index([email])
+  @@index([phone])
+  @@index([sessionToken])
+  @@index([status])
+}
+
+model PasswordResetSession {
+  id           String                     @id @default(cuid())
+  sessionToken String                     @unique
+
+  userId       String
+  otpId        String?
+
+  verified     Boolean                    @default(false)
+  status       PasswordResetSessionStatus @default(PENDING)
+
+  expiresAt    DateTime
+  completedAt  DateTime?
+
+  createdAt    DateTime                   @default(now())
+  updatedAt    DateTime                   @updatedAt
+
+  user         User                       @relation(fields: [userId], references: [id])
+
+  @@index([sessionToken])
+  @@index([userId])
+  @@index([status])
+  @@index([expiresAt])
+}

@@ -1,0 +1,10 @@
+enum SequenceType {
+  ORGANIZATION
+  BRANCH
+  USER
+  MEMBER
+  LEAD
+  MEMBERSHIP
+  PAYMENT
+  INVOICE
+}

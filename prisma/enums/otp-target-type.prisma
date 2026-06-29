@@ -1,0 +1,4 @@
+enum OtpTargetType {
+  EMAIL
+  PHONE
+}

@@ -1,0 +1,15 @@
+model CodeSequence {
+  id           String       @id @default(cuid())
+  sequenceType SequenceType @unique
+  prefix       String
+  lastNumber   Int          @default(0)
+  padding      Int          @default(6)
+  status       RecordStatus @default(ACTIVE)
+
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  createdBy    String?
+  updatedBy    String?
+
+  @@index([sequenceType])
+}

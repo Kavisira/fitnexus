@@ -1,0 +1,16 @@
+model UserBranch {
+  id              String   @id @default(cuid())
+  userId          String
+  branchId        String
+  isPrimaryBranch Boolean  @default(false)
+
+  createdAt       DateTime @default(now())
+  createdBy       String?
+
+  user            User     @relation(fields: [userId], references: [id])
+  branch          Branch   @relation(fields: [branchId], references: [id])
+
+  @@unique([userId, branchId])
+  @@index([userId])
+  @@index([branchId])
+}

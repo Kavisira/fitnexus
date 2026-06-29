@@ -1,0 +1,21 @@
+model OrganizationSettings {
+  id              String       @id @default(cuid())
+  organizationId  String       @unique
+
+  logo            String?
+  defaultTheme    ThemeType    @default(ORANGE)
+  defaultLanguage LanguageType @default(ENGLISH)
+  currency        String       @default("INR")
+  timezone        String       @default("Asia/Kolkata")
+  dateFormat      String       @default("DD/MM/YYYY")
+  timeFormat      TimeFormat   @default(TWELVE_HOUR)
+
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  createdBy       String?
+  updatedBy       String?
+
+  organization    Organization @relation(fields: [organizationId], references: [id])
+
+  @@index([organizationId])
+}
