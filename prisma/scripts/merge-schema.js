@@ -34,7 +34,6 @@ const files = [
   "models/verification-otp.prisma",
   "models/registration-session.prisma",
   "models/password-reset-session.prisma",
-"models/verification-otp.prisma",
 ];
 
 const content = files
