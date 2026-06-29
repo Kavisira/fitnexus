@@ -12,26 +12,24 @@ export async function sendRegistrationOtp(input: {
   phone?: string;
   targetType: OtpTargetType;
 }) {
-  let session = input.sessionToken
-    ? await prisma.registrationSession.findUnique({
-        where: { sessionToken: input.sessionToken },
-      })
-    : null;
+  let sessionToken = input.sessionToken;
 
-  if (!session) {
-    if (!input.email || !input.phone) {
-      throw new AppError("Email and mobile number are required", 400);
-    }
-
-    session = await createRegistrationSession({
-      email: input.email,
-      phone: input.phone,
-    });
+if (!sessionToken) {
+  if (!input.email || !input.phone) {
+    throw new AppError("Email and mobile number are required", 400);
   }
 
-  const fullSession = await prisma.registrationSession.findUnique({
-    where: { sessionToken: session.sessionToken },
+  const createdSession = await createRegistrationSession({
+    email: input.email,
+    phone: input.phone,
   });
+
+  sessionToken = createdSession.sessionToken;
+}
+
+const fullSession = await prisma.registrationSession.findUnique({
+  where: { sessionToken },
+});
 
   if (!fullSession) {
     throw new AppError("Invalid registration session", 404);

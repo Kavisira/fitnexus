@@ -17,12 +17,19 @@ export const POST = apiHandler(async (request: Request) => {
     );
   }
 
-  const result = await sendRegistrationOtp({
-    sessionToken: validation.data.sessionToken,
-    email: validation.data.email,
-    phone: validation.data.phone,
-    targetType: validation.data.targetType as OtpTargetType,
-  });
+  const data = validation.data;
+
+  const result =
+    "sessionToken" in data
+      ? await sendRegistrationOtp({
+          sessionToken: data.sessionToken,
+          targetType: data.targetType as OtpTargetType,
+        })
+      : await sendRegistrationOtp({
+          email: data.email,
+          phone: data.phone,
+          targetType: data.targetType as OtpTargetType,
+        });
 
   return successResponse(result, "OTP sent successfully", 201);
 });
